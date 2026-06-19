@@ -1,12 +1,8 @@
-# file(GLOB HEADER_LIST CONFIGURE_DEPENDS 
-# 	"${MetalGPU_SOURCE_DIR}/external/**/*.hpp"
-# )
-# message("headers ${HEADER_LIST}")
-
-add_library(MetalGPU_lib vecAdd.cpp #[[ ${HEADER_LIST} ]])
+add_library(MetalGPU_lib vecAdd.cpp matMul.cpp)
 target_link_libraries(MetalGPU_lib 
 	PRIVATE 
 	fmt::fmt 
+	spdlog
 	"-framework Metal"
     "-framework Foundation"
     "-framework QuartzCore"
@@ -14,7 +10,7 @@ target_link_libraries(MetalGPU_lib
 )
 target_include_directories(MetalGPU_lib 
 	PUBLIC 
-	../include 
+	"${MetalGPU_SOURCE_DIR}/include"
 	"${MetalGPU_SOURCE_DIR}/external/"
 
 )

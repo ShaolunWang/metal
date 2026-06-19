@@ -1,10 +1,5 @@
-#define NS_PRIVATE_IMPLEMENTATION
-#define MTL_PRIVATE_IMPLEMENTATION
-#define CA_PRIVATE_IMPLEMENTATION
-
 #include "Foundation/Foundation.hpp"
 #include "Metal/Metal.hpp"
-#include "QuartzCore/QuartzCore.hpp"
 #include "fmt/format.h"
 #include <cstdio>
 #include <cstdlib>
@@ -18,6 +13,7 @@ int run() {
     fmt::report_error("no metal device found.");
     return -1;
   }
+
   auto queue = NS::TransferPtr(device->newCommandQueue());
   NS::Error *error = nullptr;
   auto libPath =
@@ -32,20 +28,20 @@ int run() {
   auto function = NS::TransferPtr(library->newFunction(funcName));
   NS::SharedPtr<MTL::ComputePipelineState> pso =
       NS::TransferPtr(device->newComputePipelineState(function.get(), &error));
-  MTL::Buffer *a =
-      device->newBuffer(bufferSize, MTL::ResourceStorageModeShared);
-  MTL::Buffer *b =
-      device->newBuffer(bufferSize, MTL::ResourceStorageModeShared);
-  MTL::Buffer *result =
-      device->newBuffer(bufferSize, MTL::ResourceStorageModeShared);
+  NS::SharedPtr<MTL::Buffer> a = NS::TransferPtr(
+      device->newBuffer(bufferSize, MTL::ResourceStorageModeShared));
+  NS::SharedPtr<MTL::Buffer> b = NS::TransferPtr(
+      device->newBuffer(bufferSize, MTL::ResourceStorageModeShared));
+  NS::SharedPtr<MTL::Buffer> result = NS::TransferPtr(
+      device->newBuffer(bufferSize, MTL::ResourceStorageModeShared));
 
   float *pa = static_cast<float *>(a->contents());
   float *pb = static_cast<float *>(b->contents());
 
   // init some values
   for (size_t i = 0; i < arrayLength; i++) {
-    pa[i] = (float)rand() / RAND_MAX;
-    pb[i] = (float)rand() / RAND_MAX;
+    pa[i] = static_cast<float>(rand()) / RAND_MAX;
+    pb[i] = static_cast<float>(rand()) / RAND_MAX;
   }
   NS::SharedPtr<MTL::CommandBuffer> cmdBuffer =
       NS::TransferPtr(queue->commandBuffer());
@@ -54,9 +50,9 @@ int run() {
 
   enc->setComputePipelineState(pso.get());
 
-  enc->setBuffer(a, 0, 0);
-  enc->setBuffer(b, 0, 1);
-  enc->setBuffer(result, 0, 2);
+  enc->setBuffer(a.get(), 0, 0);
+  enc->setBuffer(b.get(), 0, 1);
+  enc->setBuffer(result.get(), 0, 2);
   MTL::Size gridSize(arrayLength, 1, 1);
   size_t maxThreads = pso->maxTotalThreadsPerThreadgroup();
   if (maxThreads > arrayLength) {
@@ -75,6 +71,5 @@ int run() {
   for (size_t i = 0; i < 10; i++) {
     printf("%f + %f = %f\n", pa[i], pb[i], pr[i]);
   }
-  // error->release();
   return 0;
 }

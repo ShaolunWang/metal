@@ -1,5 +1,7 @@
-#include "vecAdd.h"
+#include "matMul.h"
 int main() {
-  run();
+  // run();
+	auto m = MatMul();
+	m.run();
   return 0;
 }
