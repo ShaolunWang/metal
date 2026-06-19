@@ -31,7 +31,7 @@ kernel void matMul(
 		// The accumulator basically says that we should 
 		//
 		thread_local float = load A[row * K + k]; 
-		^---- this gets shared on the fixed k across all threads
+		// ^---- this gets shared on the fixed k across all threads
 
 		accumulator += inA[row * K + k] * inB[k * N + col];
 
