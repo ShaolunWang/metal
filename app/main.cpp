@@ -1,7 +1,6 @@
-#include "matMul.h"
+#include "bm.h"
 int main() {
-  // run();
-	auto m = MatMul();
-	m.run();
+  Runner::run();
+
   return 0;
 }
