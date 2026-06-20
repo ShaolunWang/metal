@@ -13,18 +13,21 @@ public:
 class MatMulTileBase : public MatMul {
 public:
   MatMulTileBase(const std::string &fileName, MatMulConfig config = {});
+  void run(NS::SharedPtr<MTL::CommandBuffer> cmd,
+           NS::SharedPtr<MTL::ComputeCommandEncoder> enc,
+           ctrack::EventHandler *h) override;
 };
 class MatMulTile : public MatMulTileBase {
 public:
   explicit MatMulTile(MatMulConfig config = {})
-      : MatMulTileBase("matMul_tiling", config) {};
+      : MatMulTileBase("matMul_tiling_prototype", config) {};
 
   void benchmark() override;
 };
 class MatMulTileBroadcast : public MatMulTileBase {
 public:
   explicit MatMulTileBroadcast(MatMulConfig config = {})
-      : MatMulTileBase("matMul_tile_broadcast", config) {};
+      : MatMulTileBase("matMul_tiling_broadcast", config) {};
 
   void benchmark() override;
 };

@@ -16,6 +16,7 @@ public:
   virtual void benchmark();
   void warmup();
   std::string m_metalfileName;
+  bool verify();
 
 protected:
   NS::SharedPtr<MTL::Device> m_device;

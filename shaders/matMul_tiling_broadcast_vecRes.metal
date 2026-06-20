@@ -12,9 +12,9 @@ kernel void matMul(
 	uint3 gid [[threadgroup_position_in_grid]],
 	uint3 tid [[thread_position_in_threadgroup]]
 ) {
-	constexpr int TILE_M = 8;
-	constexpr int TILE_N = 8;
-	constexpr int TILE_K = 8;
+	constexpr int TILE_M = 16;
+	constexpr int TILE_N = 16;
+	constexpr int TILE_K = 16;
 
 	// declare two submatrices
 	threadgroup float ASubMtx[TILE_M][TILE_K];
@@ -23,12 +23,19 @@ kernel void matMul(
 	int tileRowPos = gid.y;
 	int tileColPos = gid.x;
 
-	int row = tileRowPos * TILE_M + tid.y;
+	// we now handles a full row per thread
+	int row = tileRowPos * TILE_M;
+
 	int col = tileColPos * TILE_N + tid.x;
 
 	// same optional for edges
 
-	float accumulator = 0.0f;
+	// float accumulator = 0.0f;
+	float threadResults[TM];
+
+  	for (int i = 0; i < TM; i++) {
+        threadResults[i] = 0.0f;
+    }
 
 	// NOTE: we change how the loop work here
 	// this looks very similar to loop unrolling
@@ -44,17 +51,19 @@ kernel void matMul(
 		threadgroup_barrier(mem_flags::mem_threadgroup);
 		// now we can compute with the broadcasted tiles 
 		for (int k0 = 0; k0 < TILE_K;k0++){
-			accumulator += ASubMtx[tid.y][k0] * BSubMtx[k0][tid.x];
+			float temp = BSubMtx[k0][tid.x];
+			for (int resIndx = 0; resIdx < TILE_M;resIdx++){
+				resVec[resIdx] += ASubMtx[resIdx][k0] * temp 
+			}
 		}
 		// now we want ALL threads to finish computing before we continue
         threadgroup_barrier(mem_flags::mem_threadgroup);
     }
 	
-    if (row < M && col < N) {
-
-    	result[row * N + col] = accumulator;
+	for (int i = 0; i < TILE_M;i++){
+		if (row < M && col < N) {
+			result[row * N + col] = resVec[i];
+		}
 	}
-
-
 
 }
